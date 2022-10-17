@@ -30,7 +30,6 @@ abstract contract Context {
 
 // File @openzeppelin/contracts/access/Ownable.sol@v4.7.1
 
-
 // OpenZeppelin Contracts (last updated v4.7.0) (access/Ownable.sol)
 
 pragma solidity ^0.8.0;
@@ -116,7 +115,6 @@ abstract contract Ownable is Context {
 // File contracts/interfaces/ILayerZeroReceiver.sol
 
 
-
 pragma solidity >=0.5.0;
 
 interface ILayerZeroReceiver {
@@ -130,7 +128,6 @@ interface ILayerZeroReceiver {
 
 
 // File contracts/interfaces/ILayerZeroUserApplicationConfig.sol
-
 
 
 pragma solidity >=0.5.0;
@@ -159,7 +156,6 @@ interface ILayerZeroUserApplicationConfig {
 
 
 // File contracts/interfaces/ILayerZeroEndpoint.sol
-
 
 
 pragma solidity >=0.5.0;
@@ -248,7 +244,6 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
 
 
 // File contracts/util/BytesLib.sol
-
 
 /*
  * @title Solidity Bytes Arrays Utils
@@ -764,7 +759,6 @@ library BytesLib {
 // File contracts/lzApp/LzApp.sol
 
 
-
 pragma solidity ^0.8.0;
 
 
@@ -885,7 +879,6 @@ abstract contract LzApp is Ownable, ILayerZeroReceiver, ILayerZeroUserApplicatio
 
 
 // File contracts/util/ExcessivelySafeCall.sol
-
 
 pragma solidity >=0.7.6;
 
@@ -1027,7 +1020,6 @@ library ExcessivelySafeCall {
 // File contracts/lzApp/NonblockingLzApp.sol
 
 
-
 pragma solidity ^0.8.0;
 
 
@@ -1080,7 +1072,6 @@ abstract contract NonblockingLzApp is LzApp {
 
 
 // File @openzeppelin/contracts/token/ERC20/IERC20.sol@v4.7.1
-
 
 // OpenZeppelin Contracts (last updated v4.6.0) (token/ERC20/IERC20.sol)
 
@@ -1167,7 +1158,6 @@ interface IERC20 {
 
 // File @openzeppelin/contracts/utils/introspection/IERC165.sol@v4.7.1
 
-
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/IERC165.sol)
 
 pragma solidity ^0.8.0;
@@ -1195,7 +1185,6 @@ interface IERC165 {
 
 
 // File contracts/token/oft/IOFTCore.sol
-
 
 
 pragma solidity >=0.5.0;
@@ -1250,7 +1239,6 @@ interface IOFTCore is IERC165 {
 
 // File @openzeppelin/contracts/utils/introspection/ERC165.sol@v4.7.1
 
-
 // OpenZeppelin Contracts v4.4.1 (utils/introspection/ERC165.sol)
 
 pragma solidity ^0.8.0;
@@ -1280,7 +1268,6 @@ abstract contract ERC165 is IERC165 {
 
 
 // File contracts/token/oft/OFTCore.sol
-
 
 
 pragma solidity ^0.8.0;
@@ -1367,7 +1354,6 @@ abstract contract OFTCore is NonblockingLzApp, ERC165, IOFTCore {
 
 // File @openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol@v4.7.1
 
-
 // OpenZeppelin Contracts v4.4.1 (token/ERC20/extensions/draft-IERC20Permit.sol)
 
 pragma solidity ^0.8.0;
@@ -1430,7 +1416,6 @@ interface IERC20Permit {
 
 
 // File @openzeppelin/contracts/utils/Address.sol@v4.7.1
-
 
 // OpenZeppelin Contracts (last updated v4.7.0) (utils/Address.sol)
 
@@ -1657,7 +1642,6 @@ library Address {
 
 // File @openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol@v4.7.1
 
-
 // OpenZeppelin Contracts (last updated v4.7.0) (token/ERC20/utils/SafeERC20.sol)
 
 pragma solidity ^0.8.0;
@@ -1775,7 +1759,6 @@ library SafeERC20 {
 
 // File @openzeppelin/contracts/utils/Counters.sol@v4.7.1
 
-
 // OpenZeppelin Contracts v4.4.1 (utils/Counters.sol)
 
 pragma solidity ^0.8.0;
@@ -1823,7 +1806,6 @@ library Counters {
 // File contracts/token/oft/extension/ProxyHRC20.sol
 
 
-
 pragma solidity ^0.8.0;
 
 
@@ -1834,6 +1816,13 @@ interface MultisigWallet {
         uint value,
         bytes memory data
     ) external returns (uint transactionId);
+}
+
+interface BurnableToken {
+    function burnFrom(
+        address from,
+        uint256 amount
+    ) external;
 }
 
 contract ProxyHRC20 is OFTCore {
@@ -1868,7 +1857,7 @@ contract ProxyHRC20 is OFTCore {
         uint _amount
     ) internal virtual override {
         require(_from == _msgSender(), "ProxyOFT: owner is not send caller");
-        token.safeTransferFrom(_from, bridgeManager, _amount);
+        BurnableToken(address(token)).burnFrom(_from, _amount);
     }
 
     function _creditTo(

@@ -14,6 +14,13 @@ interface MultisigWallet {
     ) external returns (uint transactionId);
 }
 
+interface BurnableToken {
+    function burnFrom(
+        address from,
+        uint256 amount
+    ) external;
+}
+
 contract ProxyHRC20 is OFTCore {
     using SafeERC20 for IERC20;
 
@@ -46,7 +53,7 @@ contract ProxyHRC20 is OFTCore {
         uint _amount
     ) internal virtual override {
         require(_from == _msgSender(), "ProxyOFT: owner is not send caller");
-        token.safeTransferFrom(_from, bridgeManager, _amount);
+        BurnableToken(address(token)).burnFrom(_from, _amount);
     }
 
     function _creditTo(
