@@ -3,9 +3,11 @@
 pragma solidity ^0.8.0;
 
 import "../OFTCore.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ProxyERC20 is OFTCore {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token;
@@ -27,7 +29,7 @@ contract ProxyERC20 is OFTCore {
         token.safeTransferFrom(_from, address(this), _amount);
         uint256 _balanceAfter = token.balanceOf(msg.sender);
         
-        uint256 _actualAmount = _balanceBefore - _balanceAfter;
+        uint256 _actualAmount = _balanceBefore.sub(_balanceAfter);
 
         return _actualAmount;
     }
