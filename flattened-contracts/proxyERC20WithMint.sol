@@ -248,8 +248,6 @@ interface ILayerZeroEndpoint is ILayerZeroUserApplicationConfig {
 
 
 // File contracts/util/BytesLib.sol
-
-// SPDX-License-Identifier: Unlicense
 /*
  * @title Solidity Bytes Arrays Utils
  * @author Gonçalo Sá <goncalo.sa@consensys.net>
@@ -885,8 +883,6 @@ abstract contract LzApp is Ownable, ILayerZeroReceiver, ILayerZeroUserApplicatio
 
 
 // File contracts/util/ExcessivelySafeCall.sol
-
- OR Apache-2.0
 pragma solidity >=0.7.6;
 
 library ExcessivelySafeCall {
@@ -2060,7 +2056,6 @@ contract ProxyERC20WithMint is OFTCore {
         uint _amount
     ) internal virtual override returns (uint256) {        
         require(_from == _msgSender(), "ProxyOFT: owner is not send caller");
-        BurnableToken(address(token)).burnFrom(_from, _amount);
 
         uint256 _balanceBefore = token.balanceOf(msg.sender);
         BurnableToken(address(token)).burnFrom(_from, _amount);
