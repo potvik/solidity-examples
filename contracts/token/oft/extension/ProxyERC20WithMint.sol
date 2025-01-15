@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 
 import "../OFTCore.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 interface MultisigWallet {
     function submitTransaction(
@@ -20,23 +21,24 @@ interface BurnableToken {
     ) external;
 }
 
+interface MintableToken {
+    function mint(
+        address to,
+        uint256 amount
+    ) external;
+}
+
 contract ProxyERC20WithMint is OFTCore {
+    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token;
 
-    address public multisig;
-    address public bridgeManager;
-
     constructor(
         address _lzEndpoint,
-        address _proxyToken,
-        address _multisig,
-        address _bridgeManager
+        address _proxyToken
     ) OFTCore(_lzEndpoint) {
         token = IERC20(_proxyToken);
-        multisig = _multisig;
-        bridgeManager = _bridgeManager;
     }
 
     function circulatingSupply() public view virtual override returns (uint) {
@@ -50,9 +52,17 @@ contract ProxyERC20WithMint is OFTCore {
         uint16,
         bytes memory,
         uint _amount
-    ) internal virtual override {
+    ) internal virtual override returns (uint256) {        
         require(_from == _msgSender(), "ProxyOFT: owner is not send caller");
         BurnableToken(address(token)).burnFrom(_from, _amount);
+
+        uint256 _balanceBefore = token.balanceOf(msg.sender);
+        BurnableToken(address(token)).burnFrom(_from, _amount);
+        uint256 _balanceAfter = token.balanceOf(msg.sender);
+        
+        uint256 _actualAmount = _balanceBefore.sub(_balanceAfter);
+
+        return _actualAmount;
     }
 
     function _creditTo(
@@ -60,17 +70,6 @@ contract ProxyERC20WithMint is OFTCore {
         address _toAddress,
         uint _amount
     ) internal virtual override {
-        MultisigWallet(multisig).submitTransaction(
-            bridgeManager,
-            0,
-            abi.encodeWithSelector(
-                0xf633be1e,
-                token,
-                _amount,
-                _toAddress,
-                // instead of src chain txn hash, using this as unique receiptId
-                keccak256(abi.encodePacked(_amount, _toAddress, blockhash(block.number - 1)))
-            )
-        );
+        MintableToken(address(token)).mint(_toAddress, _amount);
     }
 }
